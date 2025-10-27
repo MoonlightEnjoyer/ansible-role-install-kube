@@ -1,0 +1,38 @@
+---
+- name: Remove old public signing key for the Kubernetes package repositories
+  ansible.builtin.file:
+    path: /etc/apt/keyrings/kubernetes-apt-keyring.gpg
+    state: absent
+    mode: "0644"
+- name: Download the public signing key for the Kubernetes package repositories
+  # shell: curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.32/deb/Release.key
+  ansible.builtin.get_url:
+    url: https://pkgs.k8s.io/core:/stable:/v1.32/deb/Release.key
+    dest: /etc/apt/keyrings/kubernetes-apt-keyring.gpg
+    mode: "0644"
+- name: Add public key for the Kubernetes packege repositories
+  ansible.builtin.command: sudo gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg
+  changed_when: true
+- name: Add the appropriate Kubernetes apt repository
+  ansible.builtin.shell: >
+    set -o pipefail &&
+    echo 'deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg]
+    https://pkgs.k8s.io/core:/stable:/v1.32/deb/ /' |
+    sudo tee /etc/apt/sources.list.d/kubernetes.list
+  changed_when: true
+- name: Install kubelet, kubeadm and kubectl
+  ansible.builtin.apt:
+    update_cache: true
+    name:
+      - kubelet
+      - kubeadm
+      - kubectl
+- name: Hold packages
+  ansible.builtin.command: apt-mark hold kubelet kubeadm kubectl
+  changed_when: true
+- name: Disable swap
+  ansible.builtin.command: "swapoff -a"
+  changed_when: true
+- name: Disable swap permanently
+  ansible.builtin.command: "sed -i '/ swap / s/^/#/' /etc/fstab"
+  changed_when: true
