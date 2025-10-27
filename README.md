@@ -20,12 +20,9 @@ A list of other roles hosted on Galaxy should go here, plus any details in regar
 
 Example Playbook
 ----------------
-
-Including an example of how to use your role (for instance, with variables passed in as parameters) is always nice for users too:
-
-    - hosts: servers
+    - hosts: all
       roles:
-         - { role: username.rolename, x: 42 }
+         - { role: ansible-role-install-kube }
 
 License
 -------
@@ -36,3 +33,15 @@ Author Information
 ------------------
 
 An optional section for the role authors to include contact information, or a website (HTML is not allowed).
+
+Role Installation
+=========
+Prepare requirements.yml file:
+
+- name: ansible-role-install-kube
+  src: https://github.com/MoonlightEnjoyer/ansible-role-install-kube.git
+  scm: git
+
+------------------
+Install role from requirements.yml:
+  ansible-galaxy install -r requirements.yml
